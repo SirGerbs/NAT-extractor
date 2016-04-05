@@ -12,11 +12,101 @@ def check_args():
 		print "Usage: python extr_nat.py input_file output_file"
 		exit(1)
 	
+	return 0
+	
 #prepopulate my_dict with known port aliases
 def prepop_dict():
+	my_dict["ah"] = "51"
+	my_dict["eigrp"] = "88"
+	my_dict["esp"] = "50"
+	my_dict["gre"] = "47"
+	my_dict["icmp"] = "1"
+	my_dict["icmp6"] = "58"
+	my_dict["igmp"] = "2"
+	my_dict["igrp"] = "9"
+	my_dict["ip"] = "0"
+	my_dict["ipinip"] = "4"
+	my_dict["ipsec"] = "50"
+	my_dict["nos"] = "90"
+	my_dict["ospf"] = "89"
+	my_dict["pcp"] = "108"
+	my_dict["pim"] = "103"
+	my_dict["pptp"] = "47"
+	my_dict["snp"] = "109"
+	my_dict["tcp"] = "6"
+	my_dict["udp"] = "17"
+	my_dict["aol"] = "5190"
+	my_dict["bgp"] = "179"
+	my_dict["biff"] = "512"
+	my_dict["bootpc"] = "68"
+	my_dict["bootps"] = "67"
+	my_dict["chargen"] = "19"
+	my_dict["citrix-ica"] = "1494"
+	my_dict["cmd"] = "514"
+	my_dict["etiqbe"] = "2748"
+	my_dict["daytime"] = "13"
+	my_dict["discard"] = "9"
+	my_dict["domain"] = "53"
+	my_dict["dnsix"] = "195"
+	my_dict["echo"] = "7"
+	my_dict["exec"] = "512"
+	my_dict["finger"] = "79"
+	my_dict["ftp"] = "21"
+	my_dict["ftp-data"] = "20"
+	my_dict["gopher"] = "70"
 	my_dict["https"] = "443"
+	my_dict["h323"] = "1720"
+	my_dict["hostname"] = "101"
+	my_dict["ident"] = "113"
+	my_dict["imap4"] = "143"
+	my_dict["irc"] = "194"
+	my_dict["isakmp"] = "500"
+	my_dict["kerberos"] = "750"
+	my_dict["klogin"] = "543"
+	my_dict["kshell"] = "544"
+	my_dict["ldap"] = "389"
+	my_dict["ldaps"] = "636"
+	my_dict["lpd"] = "515"
+	my_dict["login"] = "513"
+	my_dict["lotusnotes"] = "1352"
+	my_dict["mobile-ip"] = "434"
+	my_dict["nameserver"] = "42"
+	my_dict["netbios-ns"] = "137"
+	my_dict["netbios-dgm"] = "138"
+	my_dict["netbios-ssn"] = "139"
+	my_dict["nntp"] = "119"
+	my_dict["ntp"] = "123"
+	my_dict["pcanywhere-status"] = "5632"
+	my_dict["pcanywhere-data"] = "5631"
+	my_dict["pim-auto-rp"] = "496"
+	my_dict["pop2"] = "109"
+	my_dict["pop3"] = "110"
+	my_dict["pptp"] = "1723"
+	my_dict["radius"] = "1645"
+	my_dict["radius-acct"] = "1646"
+	my_dict["rip"] = "520"
+	my_dict["secureid-udp"] = "5510"
 	my_dict["smtp"] = "25"
+	my_dict["snmp"] = "161"
+	my_dict["snmptrap"] = "162"
+	my_dict["sqlnet"] = "1521"
+	my_dict["ssh"] = "22"
+	my_dict["sunrpc"] = "111"
+	my_dict["syslog"] = "514"
+	my_dict["rpc"] = "111"
+	my_dict["tacacs"] = "49"
+	my_dict["talk"] = "517"
+	my_dict["telnet"] = "23"
+	my_dict["tftp"] = "69"
+	my_dict["time"] = "37"
+	my_dict["uucp"] = "540"
+	my_dict["who"] = "513"
+	my_dict["whois"] = "43"
 	my_dict["www"] = "80"
+	my_dict["xmdcp"] = "177"
+	my_dict["nfs"] = "2049"
+	my_dict["sip"] = "5060"
+	my_dict["rtsp"] = "554"
 	
 	return 0
 	
@@ -50,22 +140,14 @@ def remove_lines():
 			if line.find("range") != -1:
 				line = re.sub(r"(.*?range\s.*?)(\s)","\g<1>-", line)
 			
-			#convert netmask to cidr in lines that contain the string "subnet" or "ip address", or if the line is "object-network <IP> <Subnet>"
-			#if (re.match(r".*?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}.*?", line) and (line.find("subnet") != -1 or line.find("ip address") != -1)) or re.match(r"\s?network-object\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s?", line):
-			#	match_netmask = re.match(r".*?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}.*?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
-			#	netmask = match_netmask.group(1)
-			#	line = re.sub(r"(?<=\d)\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", mask_to_cidr2, line)
-			
 			new_file.write(line)
 	new_file.close()
 	return 0
 
 #primitive netmask to CIDR conversion. takes result from re.match as argument
 def mask_to_cidr2(netmask):
-	#obtain the part of netmask we're interested in 
+	#obtain the part of netmask we're interested in and remove unwanted whitespace at the beginning of the line
 	mask = netmask.group(0)
-	
-	#remove unwanted whitespace at the beginning of the line
 	mask = re.sub("^\s", "", mask)
 	
 	#if the string is not in the format of a netmask
@@ -73,10 +155,8 @@ def mask_to_cidr2(netmask):
 		print mask + " is not a netmask"
 		exit(1)
 	
-	#if string is a netmask
+	#if string is a netmask find the four octets and convert them to binary
 	else:
-		
-		#find the four octets and convert them to binary
 		octets = re.findall(r"\d{1,3}", mask)
 		binary = format(int(octets[0]), "b") + format(int(octets[1]), "b") + format(int(octets[2]), "b") + format(int(octets[3]), "b")
 	
@@ -85,8 +165,10 @@ def mask_to_cidr2(netmask):
 
 #Extract network objects
 def extract_network_objects():
-	#prevLine = ""
+	#object variable to store named objects
 	object = ""
+	
+	#go through the output file one line at a time
 	with open(sys.argv[2], "r") as file:
 		for line in file:
 			#take out newline at the end
@@ -111,22 +193,23 @@ def extract_network_objects():
 				#add network object and ip to dict
 				my_dict[object.group(0)] = range.group(0)
 			
+			#line declares a subnet
 			elif re.match(r"subnet\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", line):
 				#print "i found a subnet"
 				subnet = re.search(r"(?<=subnet\s).*", line)
 				
 				#add network object and ip to dict
 				my_dict[object.group(0)] = subnet.group(0)
-				
-			#store the line in the previous line variable for later use
-			#prevLine = re.sub("\s\n","", line)
 	
 	return 0
 	
 #extract object-group networks
 def extract_object_group_networks():
+	#list and variable to hold objects and lines that belong to that object
 	lines = []
 	object_group = ""
+	
+	#go through output file one line at a time
 	with open(sys.argv[2], "r") as file:
 		for line in file:
 			#take out newline at the end
@@ -140,7 +223,6 @@ def extract_object_group_networks():
 					my_dict[object_group] = lines
 				lines = []
 				object = re.search(r"(object-group [^\s]* )([^\s]*)", line)
-				#print object.group(2)
 				object_group = object.group(2)
 			
 			#if the line declares a network-object in the object-group
@@ -155,7 +237,7 @@ def extract_object_group_networks():
 			elif re.match(r"^port-object.*", line):
 				lines.append(re.sub(r"^port-object\s\w+\s", "", line))
 			
-			#if the line is something else
+			#if the line is something else, ignore it
 			else:
 				continue
 	
@@ -163,57 +245,42 @@ def extract_object_group_networks():
 	
 #return IP for object
 def dict_lookup(str):
-	#print str
+	
 	return my_dict[str]
 
 #replace named objects with IP addresses
 def name_to_ip():
 	for key, value in my_dict.iteritems():
-		#print "next"
-		#print key, value
-		
-		#if the value is a list
+		#the value can be a single IP address, or a list.
 		if isinstance(value, list):
-			#print "dealing with a list"
-						
-			#iterate through the values
 			for i in value:
-				#print i
+				#store the index value of the current list item, and duplicate as counter
 				position = value.index(i)
 				counter = position
+				
+				#if the current list item also appears in my_dict as a key, meaning it must be a named object
 				if i in my_dict:
-					#if the value is another object that is a list
+					#The value for the named object (i) could be another list
 					if isinstance(dict_lookup(i), list):
-						print "!!!!!!!!!!!!!!!"
+						#duplicate the list and iterate through the items. for each list item, store it as a value for the current named object. Then remove the original value, as the named object has now been replaced with an IP address
 						new_i = dict_lookup(i)
 						for j in new_i:
 							value.insert(counter, j)
 							counter += 1
 						value.remove(i)
 					
+					#if the value for the named object is not a list but an IP address, then just replace the named object with the IP address
 					else:
-						#print "this was in the dict"
 						value[position] = dict_lookup(i)
 				
-				#for each value, check to see if it's a valid IP address
-				#if netaddr.valid_ipv4(i) == True:
-				#	print "this is a valid IP"
-								
-				#if the value is a range
-				#if re.match(r"\d-\d", i):
-				#	print "this is a range"
-				
-				#else:
-				#	print "pass"
-				#	pass
-				#else:
-					#while isinstance()
-					#print "this is not a valid IP and should be: " + str(my_dict[i])
-		#else:
-		#	print "the above is not a list"
-			
-		print key, value
+				#if the current list item does not appear in my_dict as a key, then it should itself be an IP address and nothing needs to be done. 
+				else:
+					pass
 		
+		#if they value is not a list then it should be an IP address and nothing else needs to be done
+		else:
+			pass
+				
 	return 0
 
 def main():
@@ -227,4 +294,3 @@ def main():
 	return 0
 
 main()
-print "DONE"
