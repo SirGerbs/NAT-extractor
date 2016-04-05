@@ -283,6 +283,23 @@ def name_to_ip():
 				
 	return 0
 
+#time to do stuff with NAT tables line 8789
+def parse_nat():
+	with open(sys.argv[2], "r") as nat_file:
+		for line in nat_file:
+			if re.match(r"nat \(inside,outside\) (\bafter-auto\s)?source.*", line):
+				inside_group = re.search(r".*(dynamic |static )(?P<this>[^\s]+)", line)
+				outside_group = re.search(r".*(dynamic | static )([^\s]+\s)(?P<this>[^\s]+)", line)
+				#print line
+				inside = inside_group.group("this")
+				outside = outside_group.group("this")
+				#print inside
+				#print outside
+				
+				print str(my_dict[outside]) + " -- " + str(my_dict[inside]) + "\n"
+	
+	return 0
+	
 def main():
 	check_args()
 	prepop_dict()	
@@ -290,6 +307,9 @@ def main():
 	extract_network_objects()
 	extract_object_group_networks()
 	name_to_ip()
+	parse_nat()
+	
+	#print my_dict["SCAN-VRF01-PAT"]
 	
 	return 0
 
