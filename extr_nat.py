@@ -10,7 +10,7 @@ nat_dict = {}
 
 #verify user entered enough cmd line arguments
 def check_args():
-	print "in check_args"
+	#print "in check_args"
 	
 	if len(sys.argv) < 2:
 		print "Usage: python extr_nat.py configuration_file"
@@ -20,7 +20,7 @@ def check_args():
 	
 #prepopulate ip_dict with known port aliases
 def prepop_dict():
-	print "in prepop_dict"
+	#print "in prepop_dict"
 	
 	ip_dict["ah"] = "51"
 	ip_dict["eigrp"] = "88"
@@ -211,7 +211,7 @@ def extract_network_objects():
 def extract_object_group_networks():
 	#print "in extract_object_group_networks"
 	
-	#list and variable to hold objects and lines that belong to that object
+	#list and variable to hold object and lines that belong to that object
 	lines = []
 	object_group = ""
 	
@@ -223,8 +223,12 @@ def extract_object_group_networks():
 		line = file_dict[iter_counter]
 		
 		#take out newline at the end
-		line = re.sub(r"\n","",line)
+		line = re.sub(r"\s$","",line)
 		
+		#if the line declares a range, swap out the space for a dash
+		if re.match(r".*range \d+ \d+$", line):
+			line = re.sub(r"(?P<one>range \d+) (?P<two>[^\s]+)$", r"\g<one>-\g<two>", line)
+			
 		#if the line declares a new object-group
 		if re.match(r'^object-group.*', line):
 			#if it's not the first time an object-group is declared, add hosts from previous lines to the dict, then reset
@@ -239,15 +243,38 @@ def extract_object_group_networks():
 		elif re.match(r'^\s?network-object.*', line):
 			host_group = re.search(r"(\s?network-object (object |host )?)(?P<this>.*)",line)
 			host = host_group.group("this")
-			lines.append(re.sub(r"\s?network-object\s((object|host)\s)?", "", line))
+			lines.append(host)
 		
 		#if the line declares a group-object in the object-group
-		elif re.match(r"^group-object.*", line):
-			lines.append(re.sub("^\s?group-object\s", "", line))
+		elif re.match(r"^\s?group-object.*", line):
+			host_group = re.search(r"(\s?group-object )(?P<this>[^\s]+)$",line)
+			host = host_group.group("this")
+			lines.append(host)
 		
 		#if the line declares a port-object in the object-group
-		elif re.match(r"^port-object.*", line):
-			lines.append(re.sub(r"^s?port-object\s\w+\s", "", line))
+		elif re.match(r"^\s?port-object.*", line):
+			host_group = re.search(r"(\s?port-object.* )(?P<this>[^\s]+)$",line)
+			host = host_group.group("this")
+			lines.append(host)
+		
+		#if the line declares a service-object
+		elif re.match(r"\s?service-object.*",line):
+			print "!!!"
+			host_group = re.search(r"(\s?service-object.* )(?P<this>[^\s]+)$",line)
+			host = host_group.group("this")
+			lines.append(host)
+		
+		#if the line declares a protocol-object
+		elif re.match(r"^\s?protocol-object.*", line):
+			host_group = re.search(r"(\s?protocol-object.* )(?P<this>[^\s]+)$",line)
+			host = host_group.group("this")
+			lines.append(host)
+		
+		#if the line declares an icmp-object
+		elif re.match(r"\s?icmp-object.*", line):
+			host_group = re.search(r"(\s?icmp-object.* )(?P<this>[^\s]+)$",line)
+			host = host_group.group("this")
+			lines.append(host)			
 		
 		iter_counter += 1
 		
@@ -356,8 +383,8 @@ def main():
 	#name_to_ip()
 	#parse_nat()
 	
-	#for key, value in ip_dict.iteritems():
-	#	print key, value
+	for key, value in ip_dict.iteritems():
+		print key, value
 	
 	#iter_counter = 0
 	#while iter_counter < len(file_dict):
