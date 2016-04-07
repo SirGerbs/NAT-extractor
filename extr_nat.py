@@ -5,6 +5,7 @@ import netaddr
 
 #globally accessible dict to hold network objects
 my_dict = {}
+nat_dict = {}
 
 #verify user entered enough cmd line arguments
 def check_args():
@@ -286,18 +287,46 @@ def name_to_ip():
 #time to do stuff with NAT tables line 8789
 def parse_nat():
 	with open(sys.argv[2], "r") as nat_file:
+		nat_inside = ""
+		nat_outside = ""
+		trigger = 0
 		for line in nat_file:
-			if re.match(r"nat \(inside,outside\) (\bafter-auto\s)?source.*", line):
+			re.sub(r"\n","",line)
+					
+			if re.match(r"nat \([^\s]+,[^\s]+\)( after-auto)? source.*", line):
 				inside_group = re.search(r".*(dynamic |static )(?P<this>[^\s]+)", line)
 				outside_group = re.search(r".*(dynamic | static )([^\s]+\s)(?P<this>[^\s]+)", line)
-				#print line
+				#print "!!!!!!!!!!!!!!!!!!!!!!!!!!"
 				inside = inside_group.group("this")
 				outside = outside_group.group("this")
-				#print inside
-				#print outside
+				#print inside + " -- " + outside
 				
-				print str(my_dict[outside]) + " -- " + str(my_dict[inside]) + "\n"
+				nat_dict[outside] = inside
+			
+			elif re.match(r"object network.*", line):
+				trigger = 0
+				nat_object_group = re.search(r"(.*) (?P<this>.*)$", line)
+				nat_object = nat_object_group.group("this")
+				
+				if nat_object in my_dict:
+					trigger = 1
+					#print "!!!!!!"
+					#print nat_object
+					nat_inside = nat_object
+					continue
+			
+			elif re.match(r"^nat .*", line) and trigger == 1:
+				nat_outside_group = re.search(r"(.*) (?P<this>[^\s]+)$", line)
+				nat_outside = nat_outside_group.group("this")
+				
+				nat_dict[nat_outside] = nat_inside
+				#print nat_outside + "!!!!!!"
+			#if nat_inside != "" and nat_outside != "":
+				#print nat_outside + " -- " + nat_inside
 	
+	for key, value in nat_dict.iteritems():
+		print key, value
+		
 	return 0
 	
 def main():
