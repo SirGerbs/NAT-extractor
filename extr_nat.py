@@ -232,7 +232,6 @@ def extract_object_group_networks():
 		#if the line declares a new object-group
 		if re.match(r'^object-group.*', line):
 			#if it's not the first time an object-group is declared, add hosts from previous lines to the dict, then reset
-			#print line
 			if object_group != "":
 				ip_dict[object_group] = lines
 			lines = []
@@ -259,7 +258,6 @@ def extract_object_group_networks():
 		
 		#if the line declares a service-object
 		elif re.match(r"\s?service-object.*",line):
-			print "!!!"
 			host_group = re.search(r"(\s?service-object.* )(?P<this>[^\s]+)$",line)
 			host = host_group.group("this")
 			lines.append(host)
