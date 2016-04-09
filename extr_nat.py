@@ -2,6 +2,7 @@ import io
 import re
 import sys
 import netaddr
+import argparse
 
 #globally accessible dict to hold network objects
 file_dict = {}
@@ -117,10 +118,10 @@ def prepop_dict():
 	return 0
 	
 #function meant to store config file lines in dict, so that no "intermediate" file needs to be used
-def file_to_dict():
+def file_to_dict(config_file):
 	#print "in file_to_dict"
 	line_counter = 0
-	with open(sys.argv[1], "r") as file:
+	with open(config_file, "r") as file:
 		for line in file:
 			#if the line is empty, ignore it
 			if re.match(r'^\s*$', line):
@@ -161,7 +162,7 @@ def mask_to_cidr2(netmask):
 	#return the number of 1's that appear in the binary form of the octets
 	return "/" + str(binary.count("1"))
 
-#Extract network objects
+#Extract network objects into ip_dict
 def extract_network_objects():
 	#print "in extract_network_objects"
 	
@@ -174,40 +175,56 @@ def extract_network_objects():
 		line = file_dict[iter_counter]
 		
 		#take out newline at the end
-		line = re.sub(r"\s*$","",line)
+		line = re.sub(r"\s$","",line)
+
+		#if the line declares a range, swap out the space for a dash
+		if re.match(r".*range \d+ \d+$", line):
+			line = re.sub(r"(?P<one>range \d+) (?P<two>[^\s]+)$", r"\g<one>-\g<two>", line)
 		
 		#if the line declares a new object
-		if line.find("object") != -1:
-			object = re.search(r'(?<=object network\s).*', line)
+		if re.match("\s?object (network |service ).*", line):
+			#print line
+			object_group = re.search(r"(^\s?object (network |service ))(?P<this>[^\s]+)$", line)
+			object = object_group.group("this")
 			
 		#regex matches "host <IP>"
-		if re.match(r'\s?host \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line):
+		elif re.match(r'\s?host \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line):
 			#extract IP address belonging to object				
-			ip = re.search(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line)
+			ip_group = re.search(r'(\s?host )(?P<this>[^\s]+)$', line)
+			ip = ip_group.group("this")
 			
 			#add network object and ip to dict
-			ip_dict[object.group(0)] = ip.group(0)
+			ip_dict[object] = ip
+			#print "1" + object + ip
 		
 		#regex matches "range <IP>-<IP>"
 		elif re.match(r'\s?range \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line):
-			range = re.search(r"(?<=range\s).*", line)
+			range = re.search(r".*range (?P<this>[^\s]+)$", line)
 			
 			#add network object and ip to dict
-			ip_dict[object.group(0)] = range.group(0)
-		
+			ip_dict[object] = range.group("this")
+			#print "2" + object + range.group("this")
 		#line declares a subnet
-		elif re.match(r"subnet\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", line):
+		elif re.match(r"\s?subnet\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", line):
 			#print "i found a subnet"
-			subnet = re.search(r"(?<=subnet\s).*", line)
+			subnet = re.search(r"(\s?subnet )(?P<this>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$", line)
 			
 			#add network object and ip to dict
-			ip_dict[object.group(0)] = subnet.group(0)
-		
+			ip_dict[object] = subnet.group("this")
+			#print "3" + object + subnet.group("this")
+		#line declares a service
+		elif re.match(r"\s?service (tcp |udp )", line):
+			service_group = re.search(r"(.* )(?P<this>[^\s]+)$", line)
+			service = service_group.group("this")
+			
+			ip_dict[object] = service
+			#print "4" + object + service
 		iter_counter += 1
-		
+	#for key, value in ip_dict.iteritems():
+	#	print key, value
 	return 0
 	
-#extract object-group networks
+#extract object-group networks into ip_dict
 def extract_object_group_networks():
 	#print "in extract_object_group_networks"
 	
@@ -284,9 +301,9 @@ def dict_lookup(str):
 	return ip_dict[str]
 
 #replace named objects with IP addresses
-def name_to_ip():
+def name_to_ip(dict):
 	#print "in name_to_ip"
-	for key, value in ip_dict.iteritems():
+	for key, value in dict.iteritems():
 		#the value can be a single IP address, or a list.
 		if isinstance(value, list):
 			for i in value:
@@ -313,28 +330,64 @@ def name_to_ip():
 				else:
 					pass
 		
-		#if they value is not a list then it should be an IP address and nothing else needs to be done
-		else:
+		#if the value is not a list then it could be an IP address or port and nothing else needs to be done
+		elif re.match(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\d)", value):
 			pass
+		
+		else:
+			name_to_ip = dict_lookup(value)
+			
+			if isinstance(name_to_ip, list):
+				for i in name_to_ip:
+					#store the index value of the current list item, and duplicate as counter
+					position = name_to_ip.index(i)
+					counter = position
 				
-	return 0
+					#if the current list item also appears in ip_dict as a key, meaning it must be a named object
+					if i in ip_dict:
+						#The value for the named object (i) could be another list
+						if isinstance(dict_lookup(i), list):
+							#duplicate the list and iterate through the items. for each list item, store it as a value for the current named object. Then remove the original value, as the named object has now been replaced with an IP address
+							new_i = dict_lookup(i)
+							for j in new_i:
+								name_to_ip.insert(counter, j)
+								counter += 1
+							name_to_ip.remove(i)
+						
+						#if the value for the named object is not a list but an IP address, then just replace the named object with the IP address
+						else:
+							name_to_ip[position] = dict_lookup(i)
+							
+					#if the current list item does not appear in ip_dict as a key, then it should itself be an IP address and nothing needs to be done. 
+					else:
+						#print i
+						pass
+			else:
+				pass
+			
+			del dict[key]
+			dict[key] = name_to_ip
+				
+			
+	#for key, value in dict.iteritems():
+	#	print key, value
+	return dict
 
-#time to do stuff with NAT tables line 8789
-def parse_nat():
-	print "in parse_nat"
+#populate the nat_dict with info from the configuration file
+def pop_nat_dict():
+	#print "in parse_nat"
 	#go through the file_dict one line at a time
 	iter_counter = 0
+	trigger = 0
+	nat_inside = ""
+	nat_outside = ""
 	while iter_counter < len(file_dict):
 	#with open(sys.argv[2], "r") as nat_file:
-		nat_inside = ""
-		nat_outside = ""
-		trigger = 0
-		
 		line = file_dict[iter_counter]
 		#for line in nat_file:
-		re.sub(r"\n","",line)
+		line = re.sub(r"\s$","",line)
 				
-		if re.match(r"nat \([^\s]+,[^\s]+\)( after-auto)? source.*", line):
+		if re.match(r"\s?nat \([^\s]+,[^\s]+\)( after-auto)? source.*", line):
 			inside_group = re.search(r".*(dynamic |static )(?P<this>[^\s]+)", line)
 			outside_group = re.search(r".*(dynamic | static )([^\s]+\s)(?P<this>[^\s]+)", line)
 			#print "!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -344,9 +397,10 @@ def parse_nat():
 			
 			nat_dict[outside] = inside
 		
-		elif re.match(r"object network.*", line):
+		elif re.match(r"\s?object network.*", line):
+			#print line
 			trigger = 0
-			nat_object_group = re.search(r"(.*) (?P<this>.*)$", line)
+			nat_object_group = re.search(r"(.*) (?P<this>[^\s]+)$", line)
 			nat_object = nat_object_group.group("this")
 			
 			if nat_object in ip_dict:
@@ -354,9 +408,9 @@ def parse_nat():
 				#print "!!!!!!"
 				#print nat_object
 				nat_inside = nat_object
-				continue
-		
-		elif re.match(r"^nat .*", line) and trigger == 1:
+						
+		elif re.match(r"^\s?nat .*", line) and trigger == 1:
+			#print "!!!!!!!"
 			nat_outside_group = re.search(r"(.*) (?P<this>[^\s]+)$", line)
 			nat_outside = nat_outside_group.group("this")
 			
@@ -370,24 +424,67 @@ def parse_nat():
 	#	print key, value
 		
 	return 0
+
+#replace 
 	
+#print out the file_dict
+def print_file_dict():
+	iter_counter = 0
+	while iter_counter < len(file_dict):
+		print file_dict[iter_counter]
+		iter_counter += 1
+	
+	return 0
+
+#print out the nat_dict
+def print_dict(dict):
+	for key, value in dict.iteritems():
+		print key, value
+		
+	return 0
+
 def main():
-	print "in main"
-	check_args()
+	#argument parsing, later to be put into a function
+	parser = argparse.ArgumentParser()
+	parser.add_argument("config_file", help="Cisco Firewall Configuration File")
+	parser.add_argument("-i", "--ip", help="convert all named objects to IP addresses", action="store_true")
+	parser.add_argument("-o", "--object", help="parses out named objects", action = "store_true")
+	parser.add_argument("-n", "--nat", help="parses out NAT tables", action = "store_true")
+	args = parser.parse_args()
+	
+	if not args.object and not args.nat:
+		print "You have to specify at least -o or -n\n"
+		exit(1)
+	
 	prepop_dict()	
-	file_to_dict()
+	file_to_dict(args.config_file)
 	extract_network_objects()
 	extract_object_group_networks()
-	#name_to_ip()
-	#parse_nat()
 	
-	for key, value in ip_dict.iteritems():
-		print key, value
+	if args.object and not args.nat:
+		my_dict = ip_dict
+	elif args.nat and not args.object:
+		pop_nat_dict()
+		my_nat_dict = nat_dict
+	else:
+		pop_nat_dict()
+		my_dict = ip_dict
+		my_nat_dict = nat_dict
+		
+	if args.ip:
+		if args.nat:
+			my_dict = name_to_ip(ip_dict)
+			my_nat_dict = name_to_ip(nat_dict)
+		else:
+			my_dict = name_to_ip(my_dict)
 	
-	#iter_counter = 0
-	#while iter_counter < len(file_dict):
-	#	print file_dict[iter_counter]
-	#	iter_counter += 1
+	if args.object and not args.nat:
+		print_dict(my_dict)
+	elif args.nat and not args.object:
+		print_dict(my_nat_dict)
+	else:
+		print_dict(my_dict)
+		print_dict(my_nat_dict)
 	
 	return 0
 
