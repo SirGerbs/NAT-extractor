@@ -1,7 +1,7 @@
 import io
 import re
 import sys
-import netaddr
+#import netaddr
 import argparse
 
 #class to hold global variables and such
@@ -13,7 +13,6 @@ class mem:
 	ip_dict = {}
 	nat_dict = {}
 	port_dict = {}
-
 
 #verify user entered enough cmd line arguments
 def check_args():
@@ -148,25 +147,25 @@ def file_to_dict(config_file):
 	return 0
 
 #primitive netmask to CIDR conversion. takes result from re.match as argument
-def mask_to_cidr2(netmask):
-	#print "in mask_to_cidr2"
-	
-	#obtain the part of netmask we're interested in and remove unwanted whitespace at the beginning of the line
-	mask = netmask.group(0)
-	mask = re.sub("^\s", "", mask)
-	
-	#if the string is not in the format of a netmask
-	if not re.match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", mask):
-		print mask + " is not a netmask"
-		exit(1)
-	
-	#if string is a netmask find the four octets and convert them to binary
-	else:
-		octets = re.findall(r"\d{1,3}", mask)
-		binary = format(int(octets[0]), "b") + format(int(octets[1]), "b") + format(int(octets[2]), "b") + format(int(octets[3]), "b")
-	
-	#return the number of 1's that appear in the binary form of the octets
-	return "/" + str(binary.count("1"))
+#def mask_to_cidr2(netmask):
+#	#print "in mask_to_cidr2"
+#	
+#	#obtain the part of netmask we're interested in and remove unwanted whitespace at the beginning of the line
+#	mask = netmask.group(0)
+#	mask = re.sub("^\s", "", mask)
+#	
+#	#if the string is not in the format of a netmask
+#	if not re.match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", mask):
+#		print mask + " is not a netmask"
+#		exit(1)
+#	
+#	#if string is a netmask find the four octets and convert them to binary
+#	else:
+#		octets = re.findall(r"\d{1,3}", mask)
+#		binary = format(int(octets[0]), "b") + format(int(octets[1]), "b") + format(int(octets[2]), "b") + format(int(octets[3]), "b")
+#	
+#	#return the number of 1's that appear in the binary form of the octets
+#	return "/" + str(binary.count("1"))
 
 #Extract network objects into mem.ip_dict
 def extract_network_objects():
@@ -438,7 +437,7 @@ def key_to_ip():
 	
 	new_key_values = {}
 	for key, value in mem.nat_dict.iteritems():
-		if key in mem.ip_dict:
+		if key in mem.ip_dict and not isinstance(dict_lookup(key), list):
 			new_key = dict_lookup(key)
 			new_key_values[new_key] = value
 			#print "1 " + new_key + ", " + value
@@ -469,7 +468,7 @@ def print_file_dict():
 def print_dict(dict):
 	for key, value in dict.iteritems():
 		print key, value
-		
+	
 	return 0
 	
 def main():
@@ -522,7 +521,5 @@ def main():
 	else:
 		print_dict(my_dict)
 		print_dict(my_nat_dict)
-	
-	return 0
 
 main()
