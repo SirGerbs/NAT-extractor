@@ -4,11 +4,16 @@ import sys
 import netaddr
 import argparse
 
-#globally accessible dict to hold network objects
-file_dict = {}
-ip_dict = {}
-nat_dict = {}
-port_dict = {}
+#class to hold global variables and such
+class mem:
+	ip = False
+	object = False
+	nat = False
+	file_dict = {}
+	ip_dict = {}
+	nat_dict = {}
+	port_dict = {}
+
 
 #verify user entered enough cmd line arguments
 def check_args():
@@ -20,101 +25,101 @@ def check_args():
 	
 	return 0
 	
-#prepopulate port_dict with known port aliases
+#prepopulate mem.port_dict with known port aliases
 def prepop_dict():
 	#print "in prepop_dict"
 	
-	port_dict["ah"] = "51"
-	port_dict["eigrp"] = "88"
-	port_dict["esp"] = "50"
-	port_dict["gre"] = "47"
-	port_dict["icmp"] = "1"
-	port_dict["icmp6"] = "58"
-	port_dict["igmp"] = "2"
-	port_dict["igrp"] = "9"
-	port_dict["ip"] = "0"
-	port_dict["ipinip"] = "4"
-	port_dict["ipsec"] = "50"
-	port_dict["nos"] = "90"
-	port_dict["ospf"] = "89"
-	port_dict["pcp"] = "108"
-	port_dict["pim"] = "103"
-	port_dict["pptp"] = "47"
-	port_dict["snp"] = "109"
-	port_dict["tcp"] = "6"
-	port_dict["udp"] = "17"
-	port_dict["aol"] = "5190"
-	port_dict["bgp"] = "179"
-	port_dict["biff"] = "512"
-	port_dict["bootpc"] = "68"
-	port_dict["bootps"] = "67"
-	port_dict["chargen"] = "19"
-	port_dict["citrix-ica"] = "1494"
-	port_dict["cmd"] = "514"
-	port_dict["etiqbe"] = "2748"
-	port_dict["daytime"] = "13"
-	port_dict["discard"] = "9"
-	port_dict["domain"] = "53"
-	port_dict["dnsix"] = "195"
-	port_dict["echo"] = "7"
-	port_dict["exec"] = "512"
-	port_dict["finger"] = "79"
-	port_dict["ftp"] = "21"
-	port_dict["ftp-data"] = "20"
-	port_dict["gopher"] = "70"
-	port_dict["https"] = "443"
-	port_dict["h323"] = "1720"
-	port_dict["hostname"] = "101"
-	port_dict["ident"] = "113"
-	port_dict["imap4"] = "143"
-	port_dict["irc"] = "194"
-	port_dict["isakmp"] = "500"
-	port_dict["kerberos"] = "750"
-	port_dict["klogin"] = "543"
-	port_dict["kshell"] = "544"
-	port_dict["ldap"] = "389"
-	port_dict["ldaps"] = "636"
-	port_dict["lpd"] = "515"
-	port_dict["login"] = "513"
-	port_dict["lotusnotes"] = "1352"
-	port_dict["mobile-ip"] = "434"
-	port_dict["nameserver"] = "42"
-	port_dict["netbios-ns"] = "137"
-	port_dict["netbios-dgm"] = "138"
-	port_dict["netbios-ssn"] = "139"
-	port_dict["nntp"] = "119"
-	port_dict["ntp"] = "123"
-	port_dict["pcanywhere-status"] = "5632"
-	port_dict["pcanywhere-data"] = "5631"
-	port_dict["pim-auto-rp"] = "496"
-	port_dict["pop2"] = "109"
-	port_dict["pop3"] = "110"
-	port_dict["pptp"] = "1723"
-	port_dict["radius"] = "1645"
-	port_dict["radius-acct"] = "1646"
-	port_dict["rip"] = "520"
-	port_dict["secureid-udp"] = "5510"
-	port_dict["smtp"] = "25"
-	port_dict["snmp"] = "161"
-	port_dict["snmptrap"] = "162"
-	port_dict["sqlnet"] = "1521"
-	port_dict["ssh"] = "22"
-	port_dict["sunrpc"] = "111"
-	port_dict["syslog"] = "514"
-	port_dict["rpc"] = "111"
-	port_dict["tacacs"] = "49"
-	port_dict["talk"] = "517"
-	port_dict["telnet"] = "23"
-	port_dict["tftp"] = "69"
-	port_dict["time"] = "37"
-	port_dict["uucp"] = "540"
-	port_dict["who"] = "513"
-	port_dict["whois"] = "43"
-	port_dict["www"] = "80"
-	port_dict["xmdcp"] = "177"
-	port_dict["nfs"] = "2049"
-	port_dict["sip"] = "5060"
-	port_dict["rtsp"] = "554"
+	mem.port_dict["ah"] = "51"
+	mem.port_dict["eigrp"] = "88"
+	mem.port_dict["esp"] = "50"
+	mem.port_dict["gre"] = "47"
+	mem.port_dict["icmp"] = "1"
+	mem.port_dict["icmp6"] = "58"
+	mem.port_dict["igmp"] = "2"
+	mem.port_dict["igrp"] = "9"
+	mem.port_dict["ip"] = "0"
+	mem.port_dict["ipinip"] = "4"
+	mem.port_dict["ipsec"] = "50"
+	mem.port_dict["nos"] = "90"
+	mem.port_dict["ospf"] = "89"
+	mem.port_dict["pcp"] = "108"
+	mem.port_dict["pim"] = "103"
+	mem.port_dict["pptp"] = "47"
+	mem.port_dict["snp"] = "109"
+	mem.port_dict["tcp"] = "6"
+	mem.port_dict["udp"] = "17"
+	mem.port_dict["aol"] = "5190"
+	mem.port_dict["bgp"] = "179"
+	mem.port_dict["biff"] = "512"
+	mem.port_dict["bootpc"] = "68"
+	mem.port_dict["bootps"] = "67"
+	mem.port_dict["chargen"] = "19"
+	mem.port_dict["citrix-ica"] = "1494"
+	mem.port_dict["cmd"] = "514"
+	mem.port_dict["etiqbe"] = "2748"
+	mem.port_dict["daytime"] = "13"
+	mem.port_dict["discard"] = "9"
+	mem.port_dict["domain"] = "53"
+	mem.port_dict["dnsix"] = "195"
+	mem.port_dict["echo"] = "7"
+	mem.port_dict["exec"] = "512"
+	mem.port_dict["finger"] = "79"
+	mem.port_dict["ftp"] = "21"
+	mem.port_dict["ftp-data"] = "20"
+	mem.port_dict["gopher"] = "70"
+	mem.port_dict["https"] = "443"
+	mem.port_dict["h323"] = "1720"
+	mem.port_dict["hostname"] = "101"
+	mem.port_dict["ident"] = "113"
+	mem.port_dict["imap4"] = "143"
+	mem.port_dict["irc"] = "194"
+	mem.port_dict["isakmp"] = "500"
+	mem.port_dict["kerberos"] = "750"
+	mem.port_dict["klogin"] = "543"
+	mem.port_dict["kshell"] = "544"
+	mem.port_dict["ldap"] = "389"
+	mem.port_dict["ldaps"] = "636"
+	mem.port_dict["lpd"] = "515"
+	mem.port_dict["login"] = "513"
+	mem.port_dict["lotusnotes"] = "1352"
+	mem.port_dict["mobile-ip"] = "434"
+	mem.port_dict["nameserver"] = "42"
+	mem.port_dict["netbios-ns"] = "137"
+	mem.port_dict["netbios-dgm"] = "138"
+	mem.port_dict["netbios-ssn"] = "139"
+	mem.port_dict["nntp"] = "119"
+	mem.port_dict["ntp"] = "123"
+	mem.port_dict["pcanywhere-status"] = "5632"
+	mem.port_dict["pcanywhere-data"] = "5631"
+	mem.port_dict["pim-auto-rp"] = "496"
+	mem.port_dict["pop2"] = "109"
+	mem.port_dict["pop3"] = "110"
+	mem.port_dict["pptp"] = "1723"
+	mem.port_dict["radius"] = "1645"
+	mem.port_dict["radius-acct"] = "1646"
+	mem.port_dict["rip"] = "520"
+	mem.port_dict["secureid-udp"] = "5510"
+	mem.port_dict["smtp"] = "25"
+	mem.port_dict["snmp"] = "161"
+	mem.port_dict["snmptrap"] = "162"
+	mem.port_dict["sqlnet"] = "1521"
+	mem.port_dict["ssh"] = "22"
+	mem.port_dict["sunrpc"] = "111"
+	mem.port_dict["syslog"] = "514"
+	mem.port_dict["rpc"] = "111"
+	mem.port_dict["tacacs"] = "49"
+	mem.port_dict["talk"] = "517"
+	mem.port_dict["telnet"] = "23"
+	mem.port_dict["tftp"] = "69"
+	mem.port_dict["time"] = "37"
+	mem.port_dict["uucp"] = "540"
+	mem.port_dict["who"] = "513"
+	mem.port_dict["whois"] = "43"
+	mem.port_dict["www"] = "80"
+	mem.port_dict["xmdcp"] = "177"
+	mem.port_dict["nfs"] = "2049"
+	mem.port_dict["sip"] = "5060"
+	mem.port_dict["rtsp"] = "554"
 	
 	return 0
 	
@@ -136,7 +141,7 @@ def file_to_dict(config_file):
 			if re.match(r"^\s?description",line):
 				continue
 			
-			file_dict[line_counter] = line
+			mem.file_dict[line_counter] = line
 			line_counter += 1
 	iter_counter = 0
 	
@@ -163,17 +168,17 @@ def mask_to_cidr2(netmask):
 	#return the number of 1's that appear in the binary form of the octets
 	return "/" + str(binary.count("1"))
 
-#Extract network objects into ip_dict
+#Extract network objects into mem.ip_dict
 def extract_network_objects():
 	#print "in extract_network_objects"
 	
 	#object variable to store named objects
 	object = ""
 	
-	#go through the file_dict one line at a time
+	#go through the mem.file_dict one line at a time
 	iter_counter = 0
-	while iter_counter < len(file_dict):
-		line = file_dict[iter_counter]
+	while iter_counter < len(mem.file_dict):
+		line = mem.file_dict[iter_counter]
 		
 		#take out newline at the end
 		line = re.sub(r"\s$","",line)
@@ -195,7 +200,7 @@ def extract_network_objects():
 			ip = ip_group.group("this")
 			
 			#add network object and ip to dict
-			ip_dict[object] = ip
+			mem.ip_dict[object] = ip
 			#print "1" + object + ip
 		
 		#regex matches "range <IP>-<IP>"
@@ -203,7 +208,7 @@ def extract_network_objects():
 			range = re.search(r".*range (?P<this>[^\s]+)$", line)
 			
 			#add network object and ip to dict
-			ip_dict[object] = range.group("this")
+			mem.ip_dict[object] = range.group("this")
 			#print "2" + object + range.group("this")
 		#line declares a subnet
 		elif re.match(r"\s?subnet\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", line):
@@ -211,21 +216,21 @@ def extract_network_objects():
 			subnet = re.search(r"(\s?subnet )(?P<this>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$", line)
 			
 			#add network object and ip to dict
-			ip_dict[object] = subnet.group("this")
+			mem.ip_dict[object] = subnet.group("this")
 			#print "3" + object + subnet.group("this")
 		#line declares a service
 		elif re.match(r"\s?service (tcp |udp )", line):
 			service_group = re.search(r"(.* )(?P<this>[^\s]+)$", line)
 			service = service_group.group("this")
 			
-			ip_dict[object] = service
+			mem.ip_dict[object] = service
 			#print "4" + object + service
 		iter_counter += 1
-	#for key, value in ip_dict.iteritems():
+	#for key, value in mem.ip_dict.iteritems():
 	#	print key, value
 	return 0
 	
-#extract object-group networks into ip_dict
+#extract object-group networks into mem.ip_dict
 def extract_object_group_networks():
 	#print "in extract_object_group_networks"
 	
@@ -233,12 +238,12 @@ def extract_object_group_networks():
 	lines = []
 	object_group = ""
 	
-	#go through the file_dict one line at a time
+	#go through the mem.file_dict one line at a time
 	iter_counter = 0
-	while iter_counter < len(file_dict):
+	while iter_counter < len(mem.file_dict):
 	
 	#go through output file one line at a time
-		line = file_dict[iter_counter]
+		line = mem.file_dict[iter_counter]
 		
 		#take out newline at the end
 		line = re.sub(r"\s$","",line)
@@ -251,7 +256,7 @@ def extract_object_group_networks():
 		if re.match(r'^object-group.*', line):
 			#if it's not the first time an object-group is declared, add hosts from previous lines to the dict, then reset
 			if object_group != "":
-				ip_dict[object_group] = lines
+				mem.ip_dict[object_group] = lines
 			lines = []
 			object = re.search(r"(object-group )([^\s]+ )(?P<this>[^\s]+)", line)
 			object_group = object.group("this")
@@ -299,10 +304,10 @@ def extract_object_group_networks():
 #return IP for object
 def dict_lookup(str):
 	#print "in dict_lookup"
-	if str in ip_dict:
-		return ip_dict[str]
-	elif str in port_dict:
-		return port_dict[str]
+	if str in mem.ip_dict:
+		return mem.ip_dict[str]
+	elif str in mem.port_dict:
+		return mem.port_dict[str]
 	else:
 		return 0
 
@@ -317,8 +322,8 @@ def name_to_ip(dict):
 				position = value.index(i)
 				counter = position
 				
-				#if the current list item also appears in ip_dict as a key, meaning it must be a named object
-				if i in ip_dict or i in port_dict:
+				#if the current list item also appears in mem.ip_dict as a key, meaning it must be a named object
+				if i in mem.ip_dict or i in mem.port_dict:
 					#The value for the named object (i) could be another list
 					if isinstance(dict_lookup(i), list):
 						#duplicate the list and iterate through the items. for each list item, store it as a value for the current named object. Then remove the original value, as the named object has now been replaced with an IP address
@@ -332,7 +337,7 @@ def name_to_ip(dict):
 					else:
 						value[position] = dict_lookup(i)
 				
-				#if the current list item does not appear in ip_dict as a key, then it should itself be an IP address and nothing needs to be done. 
+				#if the current list item does not appear in mem.ip_dict as a key, then it should itself be an IP address and nothing needs to be done. 
 				else:
 					pass
 		
@@ -349,8 +354,8 @@ def name_to_ip(dict):
 					position = name_to_ip.index(i)
 					counter = position
 				
-					#if the current list item also appears in ip_dict as a key, meaning it must be a named object
-					if i in ip_dict:
+					#if the current list item also appears in mem.ip_dict as a key, meaning it must be a named object
+					if i in mem.ip_dict:
 						#The value for the named object (i) could be another list
 						if isinstance(dict_lookup(i), list):
 							#duplicate the list and iterate through the items. for each list item, store it as a value for the current named object. Then remove the original value, as the named object has now been replaced with an IP address
@@ -364,7 +369,7 @@ def name_to_ip(dict):
 						else:
 							name_to_ip[position] = dict_lookup(i)
 							
-					#if the current list item does not appear in ip_dict as a key, then it should itself be an IP address and nothing needs to be done. 
+					#if the current list item does not appear in mem.ip_dict as a key, then it should itself be an IP address and nothing needs to be done. 
 					else:
 						#print i
 						pass
@@ -379,17 +384,17 @@ def name_to_ip(dict):
 	#	print key, value
 	return dict
 
-#populate the nat_dict with info from the configuration file
+#populate the mem.nat_dict with info from the configuration file
 def pop_nat_dict():
 	#print "in parse_nat"
-	#go through the file_dict one line at a time
+	#go through the mem.file_dict one line at a time
 	iter_counter = 0
 	trigger = 0
 	nat_inside = ""
 	nat_outside = ""
-	while iter_counter < len(file_dict):
+	while iter_counter < len(mem.file_dict):
 	#with open(sys.argv[2], "r") as nat_file:
-		line = file_dict[iter_counter]
+		line = mem.file_dict[iter_counter]
 		#for line in nat_file:
 		line = re.sub(r"\s$","",line)
 				
@@ -401,7 +406,7 @@ def pop_nat_dict():
 			outside = outside_group.group("this")
 			#print inside + " -- " + outside
 			
-			nat_dict[outside] = inside
+			mem.nat_dict[outside] = inside
 		
 		elif re.match(r"\s?object network.*", line):
 			#print line
@@ -409,7 +414,7 @@ def pop_nat_dict():
 			nat_object_group = re.search(r"(.*) (?P<this>[^\s]+)$", line)
 			nat_object = nat_object_group.group("this")
 			
-			if nat_object in ip_dict:
+			if nat_object in mem.ip_dict:
 				trigger = 1
 				#print "!!!!!!"
 				#print nat_object
@@ -420,35 +425,53 @@ def pop_nat_dict():
 			nat_outside_group = re.search(r"(.*) (?P<this>[^\s]+)$", line)
 			nat_outside = nat_outside_group.group("this")
 			
-			nat_dict[nat_outside] = nat_inside
+			mem.nat_dict[nat_outside] = nat_inside
 			#print nat_outside + "!!!!!!"
 		#if nat_inside != "" and nat_outside != "":
 			#print nat_outside + " -- " + nat_inside
 		
 		iter_counter += 1
-	#for key, value in nat_dict.iteritems():
+	
+	return 0
+
+def key_to_ip():
+	
+	new_key_values = {}
+	for key, value in mem.nat_dict.iteritems():
+		if key in mem.ip_dict:
+			new_key = dict_lookup(key)
+			new_key_values[new_key] = value
+			#print "1 " + new_key + ", " + value
+			mem.nat_dict[key] = "-1"
+			#print "2 " + key + ", " + value
+	for key, value in new_key_values.iteritems():
+		mem.nat_dict[key] = value
+	
+	mem.nat_dict = {k:v for k,v in mem.nat_dict.items() if v != '-1'}
+	#mem.nat_dict = new_dict
+	#for key, value in new_key_values.iteritems():
 	#	print key, value
-		
+	
 	return 0
 
 #replace 
 	
-#print out the file_dict
+#print out the mem.file_dict
 def print_file_dict():
 	iter_counter = 0
-	while iter_counter < len(file_dict):
-		print file_dict[iter_counter]
+	while iter_counter < len(mem.file_dict):
+		print mem.file_dict[iter_counter]
 		iter_counter += 1
 	
 	return 0
 
-#print out the nat_dict
+#print out the mem.nat_dict
 def print_dict(dict):
 	for key, value in dict.iteritems():
 		print key, value
 		
 	return 0
-
+	
 def main():
 	#argument parsing, later to be put into a function
 	parser = argparse.ArgumentParser()
@@ -462,25 +485,33 @@ def main():
 		print "You have to specify at least -o or -n\n"
 		exit(1)
 	
+	if args.ip:
+		mem.ip = True
+	if args.object:
+		mem.object = True
+	if args.nat:
+		mem.nat = True
+	
 	prepop_dict()	
 	file_to_dict(args.config_file)
 	extract_network_objects()
 	extract_object_group_networks()
 	
 	if args.object and not args.nat:
-		my_dict = ip_dict
+		my_dict = mem.ip_dict
 	elif args.nat and not args.object:
 		pop_nat_dict()
-		my_nat_dict = nat_dict
+		my_nat_dict = mem.nat_dict
 	else:
 		pop_nat_dict()
-		my_dict = ip_dict
-		my_nat_dict = nat_dict
+		my_dict = mem.ip_dict
+		my_nat_dict = mem.nat_dict
 		
 	if args.ip:
 		if args.nat:
-			my_dict = name_to_ip(ip_dict)
-			my_nat_dict = name_to_ip(nat_dict)
+			my_dict = name_to_ip(mem.ip_dict)
+			key_to_ip()
+			my_nat_dict = name_to_ip(mem.nat_dict)
 		else:
 			my_dict = name_to_ip(my_dict)
 	
