@@ -1,16 +1,13 @@
 Nat-Extractor
 
-usage: python extr-nat.py input_file output_file
+usage: python extr-nat.py [options] config_file
 
-Dependencies: netaddr
+Dependencies: netaddr, argparse
 
 Summary: Parse out named objects and NAT tables from a Cisco firewall configuration file. 
 
 TODO:
-1. Deal with service objects
-2. For ranges:
-	a. resolve named objects
-	b. make entire range explicit
-3. Make it parse out NAT tables
-4. Separate main and functions into different files
-5. Make it so that no output file is required to run the program
+1. clean up code
+2. add different output options (txt, csv, etc)
+3. make name_to_ip() work on keys as well as values
+4. make it so you can specify a single object to define
