@@ -160,9 +160,9 @@ def extract_network_objects():
 		line = re.sub(r"\s$","",line)
 
 		#if the line declares a range, swap out the space for a dash
-		if re.match(r".*range \d+ \d+$", line):
-			line = re.sub(r"(?P<one>range \d+) (?P<two>[^\s]+)$", r"\g<one>-\g<two>", line)
-		
+		if re.match(r".*range (\d+|(\d{1,3}\.){3}\d{1,3}) (\d+|(\d{1,3}\.){3}\d{1,3})$", line):
+			line = re.sub(r"(?P<one>range (\d+|(\d{1,3}\.){3}\d{1,3})) (?P<two>[^\s]+)$", r"\g<one>-\g<two>", line)
+			
 		#if the line declares a new object, store the object name in variable so it can be used later; during subsequent line iterations
 		if re.match("\s?object (network |service ).*", line):
 			object_group = re.search(r"(^\s?object (network |service ))(?P<this>[^\s]+)$", line)
